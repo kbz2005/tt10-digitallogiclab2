@@ -1,7 +1,7 @@
 `default_nettype none
 `timescale 1ns / 1ps
 
-/* Testbench for XOR Encryption Module */
+/* Testbench for Priority Encoder Module */
 module tb ();
 
   // Dump the signals to a VCD file for waveform analysis.
@@ -15,9 +15,9 @@ module tb ();
   reg clk;
   reg rst_n;
   reg ena;
-  reg [7:0] ui_in;    // Message input
-  reg [7:0] uio_in;   // Key input
-  wire [7:0] uo_out;  // Encrypted output
+  reg [7:0] ui_in;    // A[7:0] - Upper 8 bits of input
+  reg [7:0] uio_in;   // B[7:0] - Lower 8 bits of input
+  wire [7:0] uo_out;  // Encoded output C[7:0]
   wire [7:0] uio_out;
   wire [7:0] uio_oe;
 
@@ -26,8 +26,8 @@ module tb ();
   wire VGND = 1'b0;
 `endif
 
-  // Instantiate the XOR Encryption Module
-  tt_um_xor_encrypter user_project (
+  // Instantiate the Priority Encoder Module
+  tt_um_digitallogiclab2 user_project (
 
 `ifdef GL_TEST
       .VPWR(VPWR),
@@ -51,31 +51,33 @@ module tb ();
     rst_n = 1;
     ena = 1;
     
-    // Test Case 1: Encrypt and Decrypt "A" (Binary: 01000001) with Key 01010101
-    ui_in  = 8'b01000001; // Message = 'A'
-    uio_in = 8'b01010101; // Key
+    // Test Case 1: In[15:0] = 0010 1010 1111 0001 (Expected C[7:0] = 0000 1011)
+    ui_in  = 8'b00101010; 
+    uio_in = 8'b11110001; 
     #10;
-    $display("Test 1 - Encrypt: Message = %b, Key = %b, Encrypted = %b", ui_in, uio_in, uo_out);
-    if (uo_out !== (ui_in ^ uio_in)) $display("Test 1 Failed!");
+    $display("Test 1: In = %b%b, C = %b", ui_in, uio_in, uo_out);
+    if (uo_out !== 8'b00001011) $display("Test 1 Failed!");
 
-    // Decrypt
-    ui_in  = uo_out; // Ciphertext
+    // Test Case 2: In[15:0] = 0000 0000 0000 0001 (Expected C[7:0] = 0000 0000)
+    ui_in  = 8'b00000000; 
+    uio_in = 8'b00000001; 
     #10;
-    $display("Test 1 - Decrypt: Ciphertext = %b, Key = %b, Decrypted = %b", ui_in, uio_in, uo_out);
-    if (uo_out !== 8'b01000001) $display("Test 1 Failed!");
+    $display("Test 2: In = %b%b, C = %b", ui_in, uio_in, uo_out);
+    if (uo_out !== 8'b00000000) $display("Test 2 Failed!");
 
-    // Test Case 2: Encrypt and Decrypt 'X' (Binary: 01011000) with Key 10101010
-    ui_in  = 8'b01011000; // Message = 'X'
-    uio_in = 8'b10101010; // Key
+    // Test Case 3: In[15:0] = 0000 0000 0000 0000 (Expected C[7:0] = 1111 0000)
+    ui_in  = 8'b00000000; 
+    uio_in = 8'b00000000; 
     #10;
-    $display("Test 2 - Encrypt: Message = %b, Key = %b, Encrypted = %b", ui_in, uio_in, uo_out);
-    if (uo_out !== (ui_in ^ uio_in)) $display("Test 2 Failed!");
+    $display("Test 3: In = %b%b, C = %b", ui_in, uio_in, uo_out);
+    if (uo_out !== 8'b11110000) $display("Test 3 Failed!");
 
-    // Decrypt
-    ui_in  = uo_out; // Ciphertext
+    // Extra Test Case: In[15:0] = 1100 0000 0000 0000 (Expected C[7:0] = 15)
+    ui_in  = 8'b11000000; 
+    uio_in = 8'b00000000; 
     #10;
-    $display("Test 2 - Decrypt: Ciphertext = %b, Key = %b, Decrypted = %b", ui_in, uio_in, uo_out);
-    if (uo_out !== 8'b01011000) $display("Test 2 Failed!");
+    $display("Test 4: In = %b%b, C = %b", ui_in, uio_in, uo_out);
+    if (uo_out !== 8'b00001111) $display("Test 4 Failed!");
 
     // All tests completed
     $display("All tests completed.");
@@ -86,4 +88,3 @@ module tb ();
   always #5 clk = ~clk;
 
 endmodule
-
