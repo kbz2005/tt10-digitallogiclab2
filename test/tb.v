@@ -51,12 +51,13 @@ module tb ();
     rst_n = 1;
     ena = 1;
     
-    // Test Case 1: In[15:0] = 0010 1010 1111 0001 (Expected C[7:0] = 0000 1011)
+    // Test Case 1: In[15:0] = 0010 1010 1111 0001 
+    // Expected C[7:0] = 0000 1101 (13 in decimal) because the first set bit is at bit 13.
     ui_in  = 8'b00101010; 
     uio_in = 8'b11110001; 
     #10;
     $display("Test 1: In = %b%b, C = %b", ui_in, uio_in, uo_out);
-    if (uo_out !== 8'b00001011) $display("Test 1 Failed!");
+    if (uo_out !== 8'b00001101) $display("Test 1 Failed!");
 
     // Test Case 2: In[15:0] = 0000 0000 0000 0001 (Expected C[7:0] = 0000 0000)
     ui_in  = 8'b00000000; 
@@ -72,7 +73,7 @@ module tb ();
     $display("Test 3: In = %b%b, C = %b", ui_in, uio_in, uo_out);
     if (uo_out !== 8'b11110000) $display("Test 3 Failed!");
 
-    // Extra Test Case: In[15:0] = 1100 0000 0000 0000 (Expected C[7:0] = 15)
+    // Extra Test Case: In[15:0] = 1100 0000 0000 0000 (Expected C[7:0] = 0000 1111, 15 in decimal)
     ui_in  = 8'b11000000; 
     uio_in = 8'b00000000; 
     #10;
